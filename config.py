@@ -23,8 +23,8 @@ for i ,j in enumerate(CSV_RECORD_DEFAULTS):
 
 
 MODEL_PARAMS = {
-    'batch_size':512,
-    'num_epochs':500,
+    'batch_size':256,
+    'num_epochs':1000,
     'buffer_size':512
 }
 
@@ -72,5 +72,3 @@ BUCKET_CONFIGS = {
     'capital_gain':[0,1],
     'capital_loss':[0,1]
 }
-
-

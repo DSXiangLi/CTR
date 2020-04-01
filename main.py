@@ -2,51 +2,27 @@ import argparse
 import importlib
 import pandas as pd
 from config import *
+from utils import *
+import shutil
 
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-
-
-def parse_example_helper(is_keras):
-    def func(line):
-        columns = tf.io.decode_csv( line, record_defaults=CSV_RECORD_DEFAULTS )
-
-        features = dict( zip( FEATURE_NAME, columns ) )
-        if is_keras:
-            # it is so weird that keras to estimator need (,1) dimension for binary classification
-            ## ToDo: figure out why
-            target = tf.reshape( tf.cast( tf.equal( features.pop( TARGET ), '>50K' ), tf.int32 ), [-1, 1] )
-        else:
-            target = tf.reshape( tf.cast( tf.equal( features.pop( TARGET ), '>50K' ), tf.int32 ), [-1] )
-
-        return features, target
-
-    return func
-
-def input_fn(input_path, is_predict=0, is_keras=0):
-
-    def func():
-        parse_example = parse_example_helper( is_keras )
-
-        dataset = tf.data.TextLineDataset(input_path) \
-            .skip(1) \
-            .batch( 10) \
-            .map( parse_example, num_parallel_calls=8 )
-
-        if is_predict==0:
-            dataset = dataset \
-                .shuffle(MODEL_PARAMS['buffer_size'] ) \
-                .repeat(MODEL_PARAMS['num_epochs'] )
-
-        return dataset
-    return func
-
 
 def main(args):
     model = args.model
     build_estimator = getattr(importlib.import_module('model.{}.{}'.format(model, model)),
                         'build_estimator')
 
-    estimator = build_estimator(MODEL_DIR.format(model))
+    model_dir = MODEL_DIR.format(model)
+
+    if args.clear_model:
+        try:
+            shutil.rmtree(model_dir)
+        except Exception as e:
+            print('Error! {} occured at model cleanin'.format(e))
+        else:
+            print( '{} model cleaned'.format(model_dir) )
+
+    estimator = build_estimator(model_dir)
 
     if args.type == 'train':
         early_stopping = tf.estimator.experimental.stop_if_no_decrease_hook(
@@ -70,6 +46,7 @@ if __name__ =='__main__':
     parser.add_argument( '--model', type = str, help = 'which model to use[FM|FFM]',required=True )
     parser.add_argument( '--type', type = str, help = 'To train new model or load model to predit', required=False, default='train' )
     parser.add_argument( '--is_keras', type=int, help='Whether tf.estimator is built on keras', required=False, default=0 )
+    parser.add_arguument('--clear_model', type=int, help='Whether to clear existing model', required=False, default=1)
     args = parser.parse_args()
 
     main(args)

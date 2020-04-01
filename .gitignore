@@ -1,0 +1,5 @@
+.DS_Store
+.idea/
+checkpoint/*
+.gitignore.swp
+__pycache__/
