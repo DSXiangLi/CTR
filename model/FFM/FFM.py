@@ -1,6 +1,8 @@
 """
 Paper
 
+Yuchin Juan，Yong Zhuang，Wei-Sheng Chin，Field-aware Factorization Machines for CTR Prediction
+
 """
 
 from model.FFM.preprocess import build_features

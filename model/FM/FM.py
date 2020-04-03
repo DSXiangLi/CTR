@@ -1,7 +1,7 @@
 """
 Paper
-1. S. Rendle, “Factorization machines,” in Proceedings of IEEE International Conference on Data Mining (ICDM), pp. 995–1000, 2010
-2.
+
+S. Rendle, “Factorization machines,” in Proceedings of IEEE International Conference on Data Mining (ICDM), pp. 995–1000, 2010
 
 """
 
@@ -11,6 +11,10 @@ from tensorflow.keras import activations, Model
 import tensorflow.keras.backend as K
 from config import *
 from model.FM.preprocess import build_features
+
+def add_layer_summary(value):
+  tf.summary.scalar('fraction_of_zero_values', tf.math.zero_fraction(value))
+  tf.summary.histogram('activation', value)
 
 class FM_Layer( Layer ):
     """
@@ -25,7 +29,6 @@ class FM_Layer( Layer ):
     def __init__(self, factor_dim,  **kwargs):
         self.factor_dim = factor_dim
         self.InputSepc = InputSpec( ndim=2 )  # Specifies input layer attribute. one Inspec for each input
-
         super( FM_Layer, self ).__init__( **kwargs )
 
     def build(self, input_shape):
@@ -39,7 +42,7 @@ class FM_Layer( Layer ):
         input_dim = int( input_shape[-1] )
 
         self.w = self.add_weight( name='w0', shape=(input_dim, 1),
-                                  initializer='glorot_uniform',
+                                  initializer='truncated_normal',
                                   trainable=True )
 
         self.b = self.add_weight( name='bias', shape=(1,),
@@ -47,7 +50,7 @@ class FM_Layer( Layer ):
                                   trainable=True )
 
         self.v = self.add_weight( name='hidden_vector', shape=(input_dim, self.factor_dim),
-                                  initializer='glorot_uniform',
+                                  initializer='truncated_normal',
                                   trainable=True )
 
         super( FM_Layer, self ).build( input_shape )  # set self.built=True
@@ -68,13 +71,15 @@ class FM_Layer( Layer ):
         # (1, factor_dim) -> (1)
         quad_term = K.mean( (sum_square - square_sum), axis=1, keepdims=True )
 
+        tf.summary.histogram('quad_term', quad_term)
         output = linear_term + quad_term
+        tf.summary.histogram('output', output)
 
         return output
 
     def compute_output_shape(self, input_shape):
         # Attention: tf.keras回传input_shape是tf.dimension而不是tuple, 所以要cast成int
-        return (input_shape[0], 1)
+        return (int(input_shape[0]), 1)
 
     def get_config(self):
         """
@@ -98,22 +103,20 @@ def model_fn():
 
     dense_feature = feature_layer(input)
 
-    fm = FM_Layer(name = 'fm_layer',  factor_dim = 10)(dense_feature)
+    fm = FM_Layer(name = 'fm_layer',  factor_dim = 30)(dense_feature)
 
     tf.summary.histogram('fm_output', fm)
+
     output = Dense(1, activation='sigmoid', name = 'output')(fm)
 
-    model = Model(inputs = [i for i in input.values()], outputs = [output])
+    model = Model(inputs = [i for i in input.values()], outputs = output)
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.01, beta_1=0.9, beta_2=0.999, amsgrad=False)
 
     model.compile(
         optimizer = optimizer,
         loss = 'binary_crossentropy',
-        metrics=[
-            tf.keras.metrics.Accuracy(),
-            tf.keras.metrics.AUC()
-        ]
+        metrics=['binary_accuracy','AUC']
     )
     print( model.summary())
 
@@ -121,13 +124,14 @@ def model_fn():
 
 def build_estimator(model_dir):
     # keras model -> tf.estimator
+
     model = model_fn()
 
     run_config = tf.estimator.RunConfig(
-        save_summary_steps=10,
-        log_step_count_steps=10,
+        save_summary_steps=100,
+        log_step_count_steps=100,
         keep_checkpoint_max = 3,
-        save_checkpoints_steps =10
+        save_checkpoints_steps = 100
     )
     # Avoid checkpoint
     estimator = tf.keras.estimator.model_to_estimator(

@@ -28,7 +28,7 @@ def main(args):
         early_stopping = tf.estimator.experimental.stop_if_no_decrease_hook(
             estimator,
             metric_name="loss",
-            max_steps_without_decrease=50 )
+            max_steps_without_decrease=100 * 40 )
 
         train_spec = tf.estimator.TrainSpec( input_fn= input_fn(DATA_DIR.format('train'), is_keras =args.is_keras), hooks = [early_stopping])
         eval_spec = tf.estimator.EvalSpec( input_fn= input_fn(DATA_DIR.format('valid'), is_keras =args.is_keras,  is_predict=1 ))
@@ -46,7 +46,7 @@ if __name__ =='__main__':
     parser.add_argument( '--model', type = str, help = 'which model to use[FM|FFM]',required=True )
     parser.add_argument( '--type', type = str, help = 'To train new model or load model to predit', required=False, default='train' )
     parser.add_argument( '--is_keras', type=int, help='Whether tf.estimator is built on keras', required=False, default=0 )
-    parser.add_arguument('--clear_model', type=int, help='Whether to clear existing model', required=False, default=1)
+    parser.add_argument('--clear_model', type=int, help='Whether to clear existing model', required=False, default=1)
     args = parser.parse_args()
 
     main(args)
