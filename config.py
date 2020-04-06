@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 DATA_DIR = './data/adult/{}.csv'
-MODEL_DIR = './checkpoint/{}/'
+MODEL_DIR = './checkpoint/{}'
 
 FEATURE_NAME =[
     'age', 'workclass', 'fnlwgt', 'education', 'education_num',
@@ -23,7 +23,7 @@ for i ,j in enumerate(CSV_RECORD_DEFAULTS):
 
 
 MODEL_PARAMS = {
-    'batch_size':256,
+    'batch_size':1024,
     'num_epochs':1000,
     'buffer_size':512
 }

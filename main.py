@@ -14,6 +14,7 @@ def main(args):
 
     model_dir = MODEL_DIR.format(model)
 
+    # clear Existing Model
     if args.clear_model:
         try:
             shutil.rmtree(model_dir)
@@ -22,8 +23,10 @@ def main(args):
         else:
             print( '{} model cleaned'.format(model_dir) )
 
+    # build estimator
     estimator = build_estimator(model_dir)
 
+    # train or predict
     if args.type == 'train':
         early_stopping = tf.estimator.experimental.stop_if_no_decrease_hook(
             estimator,

@@ -3,8 +3,6 @@ import tensorflow as tf
 
 
 def build_estimator(model_dir):
-    # keras model -> tf.estimator
-
     sparse_feature, dense_feature= build_features()
 
     run_config = tf.estimator.RunConfig(
