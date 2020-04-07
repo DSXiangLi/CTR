@@ -2,6 +2,12 @@ from config import *
 import tensorflow as tf
 from itertools import combinations
 
+
+def znorm(mean, std):
+    def znorm_helper(col):
+        return (col-mean)/std
+    return znorm_helper
+
 def build_features():
     f_onehot = []
     f_embedding = []
@@ -15,7 +21,8 @@ def build_features():
 
     # numeric features: both in numeric feature and bucketized to discrete feature
     for col, config in BUCKET_CONFIGS.items():
-        num = tf.feature_column.numeric_column(col)
+        num = tf.feature_column.numeric_column(col,
+                                               normalizer_fn = znorm(NORM_CONFIGS[col]['mean'],NORM_CONFIGS[col]['std'] ))
         f_numeric.append(num)
         bucket = tf.feature_column.bucketized_column( num, boundaries=config )
         f_onehot.append(bucket)
@@ -31,10 +38,8 @@ def build_features():
         crossed = tf.feature_column.crossed_column([col1, col2], hash_bucket_size = 20)
         f_onehot.append(tf.feature_column.indicator_column(crossed))
 
-    # separate features into dense and sparse: sparse for LR, dense for MMLP
-    f_dense = f_numeric + f_embedding
-    f_sparse = f_onehot
-
+    f_dense = f_embedding + f_numeric    #f_dense = f_embedding + f_numeric + f_onehot
+    f_sparse = f_onehot     #f_sparse = f_onehot + f_numeric
 
     return f_sparse, f_dense
 

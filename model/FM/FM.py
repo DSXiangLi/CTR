@@ -103,7 +103,7 @@ def model_fn():
 
     dense_feature = feature_layer(input)
 
-    fm = FM_Layer(name = 'fm_layer',  factor_dim = 30)(dense_feature)
+    fm = FM_Layer(name = 'fm_layer',  factor_dim = 8)(dense_feature)
 
     tf.summary.histogram('fm_output', fm)
 
@@ -128,10 +128,10 @@ def build_estimator(model_dir):
     model = model_fn()
 
     run_config = tf.estimator.RunConfig(
-        save_summary_steps=100,
-        log_step_count_steps=100,
+        save_summary_steps=10,
+        log_step_count_steps=10,
         keep_checkpoint_max = 3,
-        save_checkpoints_steps = 100
+        save_checkpoints_steps = 10
     )
     # Avoid checkpoint
     estimator = tf.keras.estimator.model_to_estimator(
