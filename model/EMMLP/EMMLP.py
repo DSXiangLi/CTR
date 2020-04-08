@@ -30,7 +30,9 @@ def model_fn(features, labels, mode, params):
         # if treat numeric feature as dense feature, then concatenate with embedding. else concatenate wtih sparse input
         if params['numeric_handle'] == 'dense':
             numeric_input = tf.feature_column.input_layer(features, dense_columns)
-            numeric_input = tf.layers.batch_normalization(numeric_input, center = True, scale = True, trainable =True, training = True)
+
+            numeric_input = tf.layers.batch_normalization(numeric_input, center = True, scale = True, trainable =True,
+                                                          training = (mode == tf.estimator.ModeKeys.TRAIN))
             add_layer_summary( numeric_input.name, numeric_input )
             dense = tf.concat([dense, numeric_input], axis = 1, name ='numeric_concat')
             add_layer_summary(dense.name, dense)
@@ -58,9 +60,10 @@ def model_fn(features, labels, mode, params):
 
     if mode == tf.estimator.ModeKeys.TRAIN:
         optimizer = tf.train.AdamOptimizer(learning_rate = params['learning_rate'])
-        train_op = optimizer.minimize(cross_entropy,
-                                     global_step = tf.train.get_global_step())
-
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            train_op = optimizer.minimize(cross_entropy,
+                                         global_step = tf.train.get_global_step())
         return tf.estimator.EstimatorSpec(mode, loss = cross_entropy, train_op = train_op)
     else:
         eval_metric_ops = {
@@ -92,7 +95,7 @@ def build_estimator(model_dir):
         model_fn = model_fn,
         config = run_config,
         params = {
-            'learning_rate' :0.001,
+            'learning_rate' :0.01,
             'numeric_handle':numeric_handle,
             'hidden_units': [20,10],
             'embedding_dim': 5,
