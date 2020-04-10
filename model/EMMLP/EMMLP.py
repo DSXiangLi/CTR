@@ -2,10 +2,10 @@ import tensorflow as tf
 import numpy as np
 from config import *
 from model.EMMLP.preprocess import build_features
+from utils import tf_estimator_model, add_layer_summary
 
-def add_layer_summary(tag, value):
-  tf.summary.histogram('activation/{}'.format(tag), value)
 
+@tf_estimator_model
 def model_fn(features, labels, mode, params):
     sparse_columns, dense_columns = build_features(params['numeric_handle'])
 
@@ -47,35 +47,7 @@ def model_fn(features, labels, mode, params):
     with tf.variable_scope('output'):
         y = tf.layers.dense(dense, units=2, activation = 'relu', name = 'output')
 
-    if mode == tf.estimator.ModeKeys.PREDICT:
-        predictions = {
-            'predict_class': tf.argmax(tf.nn.softmax(y), axis=1),
-            'prediction_prob': tf.nn.softmax(y)
-        }
-
-        return tf.estimator.EstimatorSpec(mode = tf.estimator.ModeKeys.PREDICT,
-                                          predictions = predictions)
-
-    cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits( labels=labels, logits=y ))
-
-    if mode == tf.estimator.ModeKeys.TRAIN:
-        optimizer = tf.train.AdamOptimizer(learning_rate = params['learning_rate'])
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-        with tf.control_dependencies(update_ops):
-            train_op = optimizer.minimize(cross_entropy,
-                                         global_step = tf.train.get_global_step())
-        return tf.estimator.EstimatorSpec(mode, loss = cross_entropy, train_op = train_op)
-    else:
-        eval_metric_ops = {
-            'accuracy': tf.metrics.accuracy(labels = labels,
-                                            predictions = tf.argmax(tf.nn.softmax(y), axis=1)),
-            'auc': tf.metrics.auc(labels = labels ,
-                                  predictions = tf.nn.softmax(y)[:,1]),
-            'pr': tf.metrics.auc(labels = labels,
-                                 predictions = tf.nn.softmax(y)[:,1],
-                                 curve = 'PR')
-        }
-        return tf.estimator.EstimatorSpec(mode, loss = cross_entropy, eval_metric_ops = eval_metric_ops)
+    return y
 
 
 def build_estimator(model_dir):
@@ -88,7 +60,7 @@ def build_estimator(model_dir):
     )
 
     # can choose to bucketize the numeric feature or concatenate directly with embedding
-    numeric_handle = 'dense'
+    numeric_handle = 'bucketize'
     model_dir = model_dir + '/'+ numeric_handle
 
     estimator = tf.estimator.Estimator(
