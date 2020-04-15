@@ -12,8 +12,8 @@ FEATURE_NAME =[
 
 TARGET = 'income_bracket'
 
-CSV_RECORD_DEFAULTS = [[0], [''], [0], [''], [0], [''], [''], [''], [''], [''],
-                        [0], [0], [0], [''], ['']]
+CSV_RECORD_DEFAULTS = [[0.0], [''], [0.0], [''], [0.0], [''], [''], [''], [''], [''],
+                        [0.0], [0.0], [0.0], [''], ['']]
 DTYPE ={}
 for i ,j in enumerate(CSV_RECORD_DEFAULTS):
     if j[0]=='':
@@ -23,43 +23,43 @@ for i ,j in enumerate(CSV_RECORD_DEFAULTS):
 
 
 MODEL_PARAMS = {
-    'batch_size':1024,
-    'num_epochs':1000,
+    'batch_size':512,
+    'num_epochs':5000,
     'buffer_size':512
 }
 
 EMB_CONFIGS = {
     'workclass':{
         'hash_size':10,
-        'emb_size':5
+        'emb_size':3
     },
     'education':{
         'hash_size':10,
-        'emb_size':5
+        'emb_size':3
     },
     'marital_status':{
         'hash_size':10,
-        'emb_size':5
+        'emb_size':3
     },
     'occupation': {
-        'hash_size': 100,
-        'emb_size': 5
+        'hash_size': 30,
+        'emb_size': 3
     },
     'relationship': {
         'hash_size': 10,
-        'emb_size': 5
+        'emb_size': 3
     },
     'race': {
         'hash_size': 10,
-        'emb_size': 5
+        'emb_size': 3
     },
     'gender': {
         'hash_size': 10,
-        'emb_size': 2
+        'emb_size': 3
     },
     'native_country':{
-        'hash_size':100,
-        'emb_size': 10
+        'hash_size':30,
+        'emb_size': 3
     }
 }
 
@@ -71,4 +71,31 @@ BUCKET_CONFIGS = {
     'hours_per_week':[25,35,40,45,55],
     'capital_gain':[0,1],
     'capital_loss':[0,1]
+}
+
+NORM_CONFIGS = {
+    'age':{
+        'mean': 38.5,
+        'std': 13.6
+    },
+    'fnlwgt':{
+        'mean':189781.81,
+        'std':105549.76
+    },
+    'education_num':{
+        'mean':10.08,
+        'std':2.57
+    },
+    'hours_per_week':{
+        'mean':40.44,
+        'std':12.35
+    },
+    'capital_gain':{
+        'mean':1077.62,
+        'std':7385.40
+    },
+    'capital_loss':{
+        'mean':87.31,
+        'std':402.97
+    }
 }

@@ -42,10 +42,10 @@ def model_fn(features, labels, mode, params):
             dense = tf.layers.dense(dense, units = unit, activation = 'relu', name = 'Dense_{}'.format(i))
             if mode == tf.estimator.ModeKeys.TRAIN:
                 add_layer_summary(dense.name, dense)
-                dense = tf.layers.dropout(dense, rate = params['dropout_rate'])
+                dense = tf.layers.dropout(dense, rate = params['dropout_rate'], training = (mode==tf.estimator.ModeKeys.TRAIN))
 
     with tf.variable_scope('output'):
-        y = tf.layers.dense(dense, units=2, activation = 'relu', name = 'output')
+        y = tf.layers.dense(dense, units=1, name = 'output')
 
     return y
 
@@ -53,10 +53,10 @@ def model_fn(features, labels, mode, params):
 def build_estimator(model_dir):
 
     run_config = tf.estimator.RunConfig(
-        save_summary_steps= 10,
-        log_step_count_steps= 10,
+        save_summary_steps= 50,
+        log_step_count_steps= 50,
         keep_checkpoint_max = 3,
-        save_checkpoints_steps = 10
+        save_checkpoints_steps = 50
     )
 
     # can choose to bucketize the numeric feature or concatenate directly with embedding
@@ -67,10 +67,10 @@ def build_estimator(model_dir):
         model_fn = model_fn,
         config = run_config,
         params = {
-            'learning_rate' :0.01,
+            'learning_rate' :0.002,
             'numeric_handle':numeric_handle,
             'hidden_units': [20,10],
-            'embedding_dim': 5,
+            'embedding_dim': 4,
             'dropout_rate': 0.1
         },
         model_dir= model_dir

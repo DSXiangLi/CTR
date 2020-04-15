@@ -1,3 +1,10 @@
+"""
+paper
+
+Cheng H T, Koc L, Harmsen J, et al. Wide & deep learning for recommender systems[C]/
+/Proceedings of the 1st Workshop on Deep Learning for Recommender Systems. ACM, 2016: 7-10
+
+"""
 from model.wide_and_deep.preprocess import build_features
 import tensorflow as tf
 
