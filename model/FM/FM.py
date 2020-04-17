@@ -5,136 +5,65 @@ S. Rendle, “Factorization machines,” in Proceedings of IEEE International Co
 
 """
 
-from tensorflow.keras.layers import Layer, InputSpec, Input, Dense
-from tensorflow.keras import activations, Model
+import sys
+import tensorflow as tf
+from preprocess import build_features
+from utils import tf_estimator_model, add_layer_summary
 
-import tensorflow.keras.backend as K
-from config import *
-from model.FM.preprocess import build_features
-
-def add_layer_summary(value):
-  tf.summary.scalar('fraction_of_zero_values', tf.math.zero_fraction(value))
-  tf.summary.histogram('activation', value)
-
-class FM_Layer( Layer ):
+@tf_estimator_model
+def model_fn(features, labels, mode, params):
     """
-    Input:
-        factor_dim: latent vector size
-        input_shape: raw feature size
-        activation
-    output:
-        FM layer output
+    FM model
     """
+    feature_columns= build_features()
 
-    def __init__(self, factor_dim,  **kwargs):
-        self.factor_dim = factor_dim
-        self.InputSepc = InputSpec( ndim=2 )  # Specifies input layer attribute. one Inspec for each input
-        super( FM_Layer, self ).__init__( **kwargs )
+    input = tf.feature_column.input_layer(features, feature_columns)
 
-    def build(self, input_shape):
-        """
-        input:
-            tuple of input_shape
-        func:
-            define all the necessary variable here
-        """
-        assert len( input_shape ) >= 2
-        input_dim = int( input_shape[-1] )
+    input_dim = input.get_shape().as_list()[-1]
 
-        self.w = self.add_weight( name='w0', shape=(input_dim, 1),
-                                  initializer='truncated_normal',
-                                  trainable=True )
+    with tf.variable_scope('linear'):
+        init = tf.random_normal( shape = (input_dim,1) )
+        w = tf.get_variable('w', dtype = tf.float32, initializer = init, validate_shape = False)
+        b = tf.get_variable('b', shape = [1], dtype= tf.float32)
 
-        self.b = self.add_weight( name='bias', shape=(1,),
-                                  initializer='zeros',
-                                  trainable=True )
+        linear_term = tf.add(tf.matmul(input,w), b)
+        add_layer_summary( linear_term.name, linear_term)
 
-        self.v = self.add_weight( name='hidden_vector', shape=(input_dim, self.factor_dim),
-                                  initializer='truncated_normal',
-                                  trainable=True )
+    with tf.variable_scope('fm_interaction'):
+        init = tf.truncated_normal(shape = (input_dim, params['factor_dim']))
+        v = tf.get_variable('v', dtype = tf.float32, initializer = init, validate_shape = False)
 
-        super( FM_Layer, self ).build( input_shape )  # set self.built=True
+        sum_square = tf.pow(tf.matmul(input, v),2)
+        square_sum = tf.matmul(tf.pow(input,2), tf.pow(v,2))
 
-    def call(self, x):
-        """
-        input:
-            x(previous layer output)
-        func:
-            core calculcation of layer goes here
-        """
-        linear_term = K.dot( x, self.w ) + self.b
+        interaction_term = 0.5 * tf.reduce_mean(sum_square - square_sum, axis=1, keep_dims= True)
 
-        # Embedding之和，Embedding内积： (1, input_dim) * (input_dim, factor_dim) = (1, factor_dim)
-        sum_square = K.pow( K.dot( x, self.v ), 2 )
-        square_sum = K.dot( K.pow( x, 2 ), K.pow( self.v, 2 ) )
+        add_layer_summary(interaction_term.name, interaction_term)
 
-        # (1, factor_dim) -> (1)
-        quad_term = K.mean( (sum_square - square_sum), axis=1, keepdims=True )
+    with tf.variable_scope('output'):
+        y = tf.math.add(interaction_term, linear_term)
+        add_layer_summary(y.name, y)
 
-        tf.summary.histogram('quad_term', quad_term)
-        output = linear_term + quad_term
-        tf.summary.histogram('output', output)
-
-        return output
-
-    def compute_output_shape(self, input_shape):
-        # Attention: tf.keras回传input_shape是tf.dimension而不是tuple, 所以要cast成int
-        return (int(input_shape[0]), 1)
-
-    def get_config(self):
-        """
-        for custom Layer to be serializable
-        """
-        config = super( FM_Layer, self ).get_config()
-        config.update( {'factor_dim': self.factor_dim} )
-        return config
-
-def model_fn():
-    # build Keras Model
-
-    # use feature_column as keras input
-    input = {}
-    for f in FEATURE_NAME:
-        if f != TARGET:
-            input[f] = Input(shape=(1,), name = f, dtype = DTYPE[f])
-
-    feature_columns = build_features()
-    feature_layer = tf.keras.layers.DenseFeatures( feature_columns )
-
-    dense_feature = feature_layer(input)
-
-    fm = FM_Layer(name = 'fm_layer',  factor_dim = 8)(dense_feature)
-
-    tf.summary.histogram('fm_output', fm)
-
-    output = Dense(1, activation='sigmoid', name = 'output')(fm)
-
-    model = Model(inputs = [i for i in input.values()], outputs = output)
-
-    optimizer = tf.keras.optimizers.Adam(learning_rate=0.01, beta_1=0.9, beta_2=0.999, amsgrad=False)
-
-    model.compile(
-        optimizer = optimizer,
-        loss = 'binary_crossentropy',
-        metrics=['binary_accuracy','AUC']
-    )
-    print( model.summary())
-
-    return model
+    return y
 
 def build_estimator(model_dir):
-    # keras model -> tf.estimator
-
-    model = model_fn()
 
     run_config = tf.estimator.RunConfig(
-        save_summary_steps=10,
-        log_step_count_steps=10,
+        save_summary_steps=50,
+        log_step_count_steps=50,
         keep_checkpoint_max = 3,
-        save_checkpoints_steps = 10
+        save_checkpoints_steps =50
     )
-    # Avoid checkpoint
-    estimator = tf.keras.estimator.model_to_estimator(
-        keras_model=model, model_dir= model_dir, config = run_config )
+
+    estimator = tf.estimator.Estimator(
+        model_fn = model_fn,
+        config = run_config,
+        params = {
+            'learning_rate' :0.01,
+            'factor_dim': 20,
+        },
+        model_dir= model_dir
+    )
 
     return estimator
+
