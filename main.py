@@ -31,12 +31,14 @@ def main(args):
         early_stopping = tf.estimator.experimental.stop_if_no_decrease_hook(
             estimator,
             metric_name="loss",
-            max_steps_without_decrease= 100 * 200 )
+            max_steps_without_decrease= 100 * 100 )
 
-        train_spec = tf.estimator.TrainSpec( input_fn= input_fn(DATA_DIR.format('train'), expand_dimension =args.expand_dimension), hooks = [early_stopping])
-        eval_spec = tf.estimator.EvalSpec( input_fn= input_fn(DATA_DIR.format('valid'), expand_dimension =args.expand_dimension,  is_predict=1 ),
+        train_spec = tf.estimator.TrainSpec( input_fn= input_fn(DATA_DIR.format('train'),
+                                                                expand_dimension =args.expand_dimension), hooks = [early_stopping])
+        eval_spec = tf.estimator.EvalSpec( input_fn= input_fn(DATA_DIR.format('valid'),
+                                                              expand_dimension =args.expand_dimension,  is_predict=1 ),
                                            steps=200,
-                                           throttle_secs=30)
+                                           throttle_secs=60)
         tf.estimator.train_and_evaluate( estimator, train_spec, eval_spec)
 
     if args.type =='predict':
@@ -50,7 +52,7 @@ if __name__ =='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument( '--model', type = str, help = 'which model to use[FM|FFM]',required=True )
     parser.add_argument( '--type', type = str, help = 'To train new model or load model to predit', required=False, default='train' )
-    parser.add_argument( '--expand_dimension', type=int, help='Whether tf.estimator is built on keras', required=False, default=0 )
+    parser.add_argument( '--expand_dimension', type=int, help='whether to expand label dimension by 1', required=False, default=0 )
     parser.add_argument( '--clear_model', type=int, help='Whether to clear existing model', required=False, default=1)
     parser.add_argument( '--parse_csv', type=int, help='Use csv parser', required=False, default=1)
     args = parser.parse_args()

@@ -53,17 +53,17 @@ def model_fn(features, labels, mode, params):
 def build_estimator(model_dir):
 
     run_config = tf.estimator.RunConfig(
-        save_summary_steps=100,
-        log_step_count_steps=100,
+        save_summary_steps=50,
+        log_step_count_steps=50,
         keep_checkpoint_max = 3,
-        save_checkpoints_steps =100
+        save_checkpoints_steps =50
     )
 
     estimator = tf.estimator.Estimator(
         model_fn = model_fn,
         config = run_config,
         params = {
-            'dropout_rate':0.2,
+            'dropout_rate':0.1,
             'learning_rate' :0.002,
             'hidden_units':[20,10,1]
         },

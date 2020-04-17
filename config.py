@@ -31,35 +31,35 @@ MODEL_PARAMS = {
 EMB_CONFIGS = {
     'workclass':{
         'hash_size':10,
-        'emb_size':3
+        'emb_size':4
     },
     'education':{
         'hash_size':10,
-        'emb_size':3
+        'emb_size':4
     },
     'marital_status':{
         'hash_size':10,
-        'emb_size':3
+        'emb_size':4
     },
     'occupation': {
         'hash_size': 30,
-        'emb_size': 3
+        'emb_size': 4
     },
     'relationship': {
         'hash_size': 10,
-        'emb_size': 3
+        'emb_size': 4
     },
     'race': {
         'hash_size': 10,
-        'emb_size': 3
+        'emb_size': 4
     },
     'gender': {
         'hash_size': 10,
-        'emb_size': 3
+        'emb_size': 4
     },
     'native_country':{
         'hash_size':30,
-        'emb_size': 3
+        'emb_size': 4
     }
 }
 
