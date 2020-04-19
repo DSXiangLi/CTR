@@ -63,8 +63,8 @@ def build_estimator(model_dir):
         model_fn = model_fn,
         config = run_config,
         params = {
-            'dropout_rate':0.1,
-            'learning_rate' :0.002,
+            'dropout_rate':0.2,
+            'learning_rate' :0.001,
             'hidden_units':[20,10,1]
         },
         model_dir= model_dir

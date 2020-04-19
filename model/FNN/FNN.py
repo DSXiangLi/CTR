@@ -5,12 +5,11 @@ Weinan Zhang, Tianming Du, and Jun Wang. Deep learning over multi-field categori
 
 """
 
-
-from model.FNN.preprocess import build_features
 import tensorflow as tf
 import numpy as np
 from config import *
 from utils import tf_estimator_model, add_layer_summary
+from model.FNN.preprocess import build_features
 
 @tf_estimator_model
 def model_fn(features, labels, mode, params):
@@ -24,8 +23,11 @@ def model_fn(features, labels, mode, params):
             './checkpoint/FM',
             'fm_interaction/v'
         ) )
-        add_layer_summary('fm_init_embeddings', embeddings)
-        dense = tf.matmul(input, embeddings)
+        weight = tf.Variable( tf.contrib.framework.load_variable(
+            './checkpoint/FM',
+            'linear/w'
+        ) )
+        dense = tf.add(tf.matmul(input, embeddings), tf.matmul(input, weight))
         add_layer_summary('input', dense)
 
     with tf.variable_scope( 'Dense' ):
