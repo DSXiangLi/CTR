@@ -10,6 +10,7 @@ from config import *
 from model.DeepFM.preprocess import build_features
 from utils import tf_estimator_model, add_layer_summary
 
+
 @tf_estimator_model
 def model_fn(features, labels, mode, params):
     dense_feature, sparse_feature = build_features()
@@ -18,10 +19,7 @@ def model_fn(features, labels, mode, params):
 
     with tf.variable_scope('FM_component'):
         with tf.variable_scope( 'Linear' ):
-            bias = tf.random_normal(shape = (1,))
-            init = tf.random_normal( shape=[sparse.get_shape().as_list()[-1], 1] )
-            w = tf.get_variable( 'linear_weight', dtype=tf.float32, initializer=init )
-            linear_output = bias + tf.matmul( sparse, w )
+            linear_output = tf.layers.dense(sparse, units=1)
             add_layer_summary( 'linear_output', linear_output )
 
         with tf.variable_scope('second_order'):
