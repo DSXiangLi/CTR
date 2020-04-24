@@ -118,7 +118,7 @@ def model_fn():
 
     return model
 
-def build_estimator(model_dir):
+def build_estimator(model_dir, **kwargs):
     # keras model -> tf.estimator
 
     model = model_fn()

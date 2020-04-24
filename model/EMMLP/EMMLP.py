@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 from config import *
 from model.EMMLP.preprocess import build_features
-from utils import tf_estimator_model, add_layer_summary
+from utils import tf_estimator_model, add_layer_summary, build_estimator_helper
 
 
 @tf_estimator_model
@@ -50,33 +50,14 @@ def model_fn(features, labels, mode, params):
     return y
 
 
-def build_estimator(model_dir):
-
-    run_config = tf.estimator.RunConfig(
-        save_summary_steps= 50,
-        log_step_count_steps= 50,
-        keep_checkpoint_max = 3,
-        save_checkpoints_steps = 50
-    )
-
-    # can choose to bucketize the numeric feature or concatenate directly with embedding
-    numeric_handle = 'bucketize'
-    model_dir = model_dir + '/'+ numeric_handle
-
-    estimator = tf.estimator.Estimator(
-        model_fn = model_fn,
-        config = run_config,
-        params = {
+build_estimator = build_estimator_helper(
+    {'dense':model_fn},
+     params = {
             'learning_rate' :0.002,
-            'numeric_handle':numeric_handle,
+            'numeric_handle':'dense', # dense or bucketize are supported
             'hidden_units': [20,10],
             'embedding_dim': 4,
             'dropout_rate': 0.1
-        },
-        model_dir= model_dir
-    )
-
-    return estimator
-
-
+        }
+)
 

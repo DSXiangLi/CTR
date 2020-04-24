@@ -1,7 +1,16 @@
 import tensorflow as tf
 
-DATA_DIR = './data/adult/{}.csv'
-MODEL_DIR = './checkpoint/{}'
+def data_dir(name, input_type):
+    DATA_CSV_DIR = './data/adult/{}.csv'
+    DATA_LIBSVM_DIR = './data/criteo/{}.libsvm'
+    if input_type == 'dense':
+        return DATA_CSV_DIR.format(name)
+    elif input_type == 'sparse':
+        return DATA_LIBSVM_DIR.format( name )
+    else:
+        raise Exception('Currenlty only dense or sparse is supported')
+
+MODEL_DIR = './test_checkpoint/{}'
 
 FEATURE_NAME =[
     'age', 'workclass', 'fnlwgt', 'education', 'education_num',

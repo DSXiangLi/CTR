@@ -7,8 +7,6 @@ def parse_example_helper_csv(expand_dimension):
 
         features = dict( zip( FEATURE_NAME, columns ) )
         if expand_dimension:
-            # it is so weird that keras to estimator need (,1) dimension for binary classification
-            ## ToDo: figure out why
             target = tf.reshape( tf.cast( tf.equal( features.pop( TARGET ), '>50K' ), tf.float32 ), [-1, 1] )
         else:
             target = tf.reshape( tf.cast( tf.equal( features.pop( TARGET ), '>50K' ), tf.int32 ), [-1] )
@@ -18,24 +16,46 @@ def parse_example_helper_csv(expand_dimension):
     return func
 
 def parse_example_helper_libsvm(expand_dimension):
+    # '0 1:0 2:0.053068 3:0.5 4:0.1 5:0.113437 6:0.874'
+    # 'label feat_id:feat_val'
     def func(line):
-        pass
+        columns = tf.string_split([line], ' ')
+
+        target = tf.string_to_number(columns.values[0], out_type = tf.float32)
+        if expand_dimension:
+            target = tf.reshape(tf.cast(target, tf.float32), [-1,1])
+        else:
+            target = tf.reshape(tf.cast(target, tf.int32), [-1])
+
+        id_vals = tf.string_split(columns.values[1:], ':')
+        id_vals = tf.reshape(id_vals.values, id_vals.dense_shape )
+        feat_ids, feat_vals = tf.split(id_vals, num_or_size_splits =2, axis=1)
+        feat_ids = tf.string_to_number(feat_ids , out_type = tf.int32)
+        feat_vals = tf.string_to_number(feat_vals, oout_type = tf.float32)
+        return {'feat_ids': feat_ids, 'feat_vals': feat_vals}, target
+
     return func
 
-def input_fn(input_path, is_predict=0, expand_dimension=0, parse_csv=1):
+
+def input_fn(input_path, is_predict, expand_dimension, input_type):
 
     def func():
         dataset = tf.data.TextLineDataset( input_path ) \
             .skip( 1 ) \
             .batch( MODEL_PARAMS['batch_size'] )
 
-        if parse_csv:
+        if input_type == 'dense':
+            # currently dense default to adult training set with csv format
             parse_example = parse_example_helper_csv( expand_dimension )
-        else:
+        elif input_type == 'sparse':
+            # currently sparse default to criteo training set with libsvm format
             parse_example = parse_example_helper_libsvm(expand_dimension)
+        else:
+            raise Exception('Only csv and libsvm are supported now')
+
         dataset = dataset.map( parse_example, num_parallel_calls=8 )
 
-        if is_predict==0:
+        if not is_predict:
             dataset = dataset \
                 .shuffle(MODEL_PARAMS['buffer_size'] ) \
                 .repeat(MODEL_PARAMS['num_epochs'] )
@@ -85,4 +105,34 @@ def tf_estimator_model(model_fn):
             return tf.estimator.EstimatorSpec( mode, loss=cross_entropy, eval_metric_ops=eval_metric_ops )
 
     return model_fn_helper
+
+
+
+def build_estimator_helper(model_fn, params):
+    def build_estimator(model_dir, input_type):
+
+        run_config = tf.estimator.RunConfig(
+            save_summary_steps=50,
+            log_step_count_steps=50,
+            keep_checkpoint_max = 3,
+            save_checkpoints_steps =50
+        )
+
+        if 'model_type' in params:
+            # PNN -> PNN/IPNN
+            model_dir = model_dir + '/' + params['model_type']
+
+        if input_type not in model_fn:
+            raise Exception('Only [{}] input_type are supported'.format(','.join(model_fn.keys()) ))
+
+        estimator = tf.estimator.Estimator(
+            model_fn = model_fn[input_type],
+            config = run_config,
+            params = params,
+            model_dir= model_dir
+        )
+
+        return estimator
+    return build_estimator
+
 

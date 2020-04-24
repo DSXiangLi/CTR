@@ -9,7 +9,7 @@ from model.wide_and_deep.preprocess import build_features
 import tensorflow as tf
 
 
-def build_estimator(model_dir):
+def build_estimator(model_dir, **kwargs):
     sparse_feature, dense_feature= build_features()
 
     run_config = tf.estimator.RunConfig(

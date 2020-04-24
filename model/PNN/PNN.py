@@ -8,7 +8,7 @@ import tensorflow as tf
 import numpy as np
 from config import *
 from model.PNN.preprocess import build_features
-from utils import tf_estimator_model, add_layer_summary
+from utils import tf_estimator_model, add_layer_summary, build_estimator_helper
 
 @tf_estimator_model
 def model_fn(features, labels, mode, params):
@@ -61,29 +61,13 @@ def model_fn(features, labels, mode, params):
     return y
 
 
-def build_estimator(model_dir):
 
-    run_config = tf.estimator.RunConfig(
-        save_summary_steps=50,
-        log_step_count_steps=50,
-        keep_checkpoint_max = 3,
-        save_checkpoints_steps =50
-    )
-
-    model_type = 'PNN'
-    model_dir = model_dir + '/'+ model_type
-
-    estimator = tf.estimator.Estimator(
-        model_fn = model_fn,
-        config = run_config,
-        params = {
-            'optimization':1,
-            'model_type': model_type.split('_')[0],
+build_estimator = build_estimator_helper(
+    {'dense':model_fn},
+     params = {
+            'model_type': 'IPNN', # support IPNN/OPNN/PNN
             'dropout_rate':0.2,
             'learning_rate' :0.002,
             'hidden_units':[24,12,1]
-        },
-        model_dir= model_dir
-    )
-
-    return estimator
+            }
+)

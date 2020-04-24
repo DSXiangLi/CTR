@@ -8,7 +8,7 @@ Weinan Zhang, Tianming Du, and Jun Wang. Deep learning over multi-field categori
 import tensorflow as tf
 import numpy as np
 from config import *
-from utils import tf_estimator_model, add_layer_summary
+from utils import tf_estimator_model, add_layer_summary, build_estimator_helper
 from model.FNN.preprocess import build_features
 
 @tf_estimator_model
@@ -45,28 +45,14 @@ def model_fn(features, labels, mode, params):
 
     return y
 
-def build_estimator(model_dir):
-
-    run_config = tf.estimator.RunConfig(
-        save_summary_steps=50,
-        log_step_count_steps=50,
-        keep_checkpoint_max=3,
-        save_checkpoints_steps=50
-    )
-
-    # load pretrained FM embedding layer to initialize the embedding layer in FNN
-    estimator = tf.estimator.Estimator(
-        model_fn = model_fn,
-        config = run_config,
-        params = {
+build_estimator = build_estimator_helper(
+    {'dense':model_fn},
+     params = {
+            'dropout_rate':0.2,
             'learning_rate' :0.002,
-            'hidden_units':[20,10],
-            'dropout_rate':0.1,
-        },
-        model_dir= model_dir
-    )
-
-    return estimator
+            'hidden_units':[24,12,1]
+            }
+)
 
 
 # check name of all the tensor in the checkpoint
