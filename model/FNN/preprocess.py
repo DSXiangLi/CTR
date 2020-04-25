@@ -11,7 +11,7 @@ def build_features():
 
     for col, config in BUCKET_CONFIGS.items():
         num = tf.feature_column.numeric_column( col )
-        bucket = tf.feature_column.bucketized_column( num, boundaries=config )
+        bucket = tf.feature_column.bucketized_column( num, boundaries = config['bin'] )
         f_sparse.append( bucket )
 
     return f_sparse

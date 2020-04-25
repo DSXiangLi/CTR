@@ -24,7 +24,7 @@ def build_features():
         num = tf.feature_column.numeric_column(col,
                                                normalizer_fn = znorm(NORM_CONFIGS[col]['mean'],NORM_CONFIGS[col]['std'] ))
         f_numeric.append(num)
-        bucket = tf.feature_column.bucketized_column( num, boundaries=config )
+        bucket = tf.feature_column.bucketized_column( num, boundaries = config['bin'] )
         f_onehot.append(bucket)
 
     # crossed features

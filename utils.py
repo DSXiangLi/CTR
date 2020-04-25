@@ -31,11 +31,10 @@ def parse_example_helper_libsvm(expand_dimension):
         id_vals = tf.reshape(id_vals.values, id_vals.dense_shape )
         feat_ids, feat_vals = tf.split(id_vals, num_or_size_splits =2, axis=1)
         feat_ids = tf.string_to_number(feat_ids , out_type = tf.int32)
-        feat_vals = tf.string_to_number(feat_vals, oout_type = tf.float32)
+        feat_vals = tf.string_to_number(feat_vals, out_type = tf.float32)
         return {'feat_ids': feat_ids, 'feat_vals': feat_vals}, target
 
     return func
-
 
 def input_fn(input_path, is_predict, expand_dimension, input_type):
 
@@ -51,7 +50,7 @@ def input_fn(input_path, is_predict, expand_dimension, input_type):
             # currently sparse default to criteo training set with libsvm format
             parse_example = parse_example_helper_libsvm(expand_dimension)
         else:
-            raise Exception('Only csv and libsvm are supported now')
+            raise Exception('Only dense and sparse are supported now')
 
         dataset = dataset.map( parse_example, num_parallel_calls=8 )
 
@@ -62,7 +61,6 @@ def input_fn(input_path, is_predict, expand_dimension, input_type):
 
         return dataset
     return func
-
 
 def add_layer_summary(tag, value):
   tf.summary.scalar('{}/fraction_of_zero_values'.format(tag), tf.math.zero_fraction(value))

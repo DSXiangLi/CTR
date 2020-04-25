@@ -16,7 +16,7 @@ def build_features(numeric_handle):
         # Method1 'onehot': bucket to one hot
         for col, config in BUCKET_CONFIGS.items():
             num = tf.feature_column.numeric_column( col )
-            bucket = tf.feature_column.bucketized_column( num, boundaries=config )
+            bucket = tf.feature_column.bucketized_column( num, boundaries = config['bin'] )
             f_sparse.append(bucket)
     else :
         # Method2 'dense': concatenate with embedding
