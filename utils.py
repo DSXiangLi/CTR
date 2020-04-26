@@ -17,18 +17,16 @@ def parse_example_helper_csv(expand_dimension):
 
 def parse_example_helper_libsvm(expand_dimension):
     # '0 1:0 2:0.053068 3:0.5 4:0.1 5:0.113437 6:0.874'
-    # 'label feat_id:feat_val'
     def func(line):
         columns = tf.string_split([line], ' ')
-
         target = tf.string_to_number(columns.values[0], out_type = tf.float32)
         if expand_dimension:
             target = tf.reshape(tf.cast(target, tf.float32), [-1,1])
         else:
             target = tf.reshape(tf.cast(target, tf.int32), [-1])
 
-        id_vals = tf.string_split(columns.values[1:], ':')
-        id_vals = tf.reshape(id_vals.values, id_vals.dense_shape )
+        splits = tf.string_split(columns.values[1:], ':')
+        id_vals = tf.reshape(splits.values, splits.dense_shape )
         feat_ids, feat_vals = tf.split(id_vals, num_or_size_splits =2, axis=1)
         feat_ids = tf.string_to_number(feat_ids , out_type = tf.int32)
         feat_vals = tf.string_to_number(feat_vals, out_type = tf.float32)
@@ -36,13 +34,9 @@ def parse_example_helper_libsvm(expand_dimension):
 
     return func
 
+
 def input_fn(input_path, is_predict, expand_dimension, input_type):
-
     def func():
-        dataset = tf.data.TextLineDataset( input_path ) \
-            .skip( 1 ) \
-            .batch( MODEL_PARAMS['batch_size'] )
-
         if input_type == 'dense':
             # currently dense default to adult training set with csv format
             parse_example = parse_example_helper_csv( expand_dimension )
@@ -52,15 +46,20 @@ def input_fn(input_path, is_predict, expand_dimension, input_type):
         else:
             raise Exception('Only dense and sparse are supported now')
 
-        dataset = dataset.map( parse_example, num_parallel_calls=8 )
+        dataset = tf.data.TextLineDataset( input_path ) \
+            .skip( 1 ) \
+            .map( parse_example, num_parallel_calls=8 )
 
         if not is_predict:
+            # shuffle before repeat and batch last
             dataset = dataset \
                 .shuffle(MODEL_PARAMS['buffer_size'] ) \
-                .repeat(MODEL_PARAMS['num_epochs'] )
+                .repeat(MODEL_PARAMS['num_epochs'] ) \
+                .batch( MODEL_PARAMS['batch_size'] )
 
         return dataset
     return func
+
 
 def add_layer_summary(tag, value):
   tf.summary.scalar('{}/fraction_of_zero_values'.format(tag), tf.math.zero_fraction(value))
@@ -103,7 +102,6 @@ def tf_estimator_model(model_fn):
             return tf.estimator.EstimatorSpec( mode, loss=cross_entropy, eval_metric_ops=eval_metric_ops )
 
     return model_fn_helper
-
 
 
 def build_estimator_helper(model_fn, params):
