@@ -4,11 +4,11 @@ def data_dir(name, input_type):
     DATA_CSV_DIR = './data/adult/{}.csv'
     DATA_LIBSVM_DIR = './data/criteo/{}.libsvm'
     if input_type == 'dense':
-        return DATA_CSV_DIR.format(name)
+        return DATA_CSV_DIR.format( name )
     elif input_type == 'sparse':
         return DATA_LIBSVM_DIR.format( name )
     else:
-        raise Exception('Currenlty only dense or sparse is supported')
+        raise Exception( 'Currenlty only dense or sparse is supported' )
 
 MODEL_DIR = './test_checkpoint/{}'
 
@@ -73,13 +73,31 @@ EMB_CONFIGS = {
 }
 
 BUCKET_CONFIGS = {
-    'age':[18, 25, 30, 35, 40, 45, 50, 55, 60, 65],
-    'fnlwgt':[6*(10**4), 10**5, 1.3*(10**5), 1.5*(10**5), 1.7*(10**5), 1.9*(10**5),
+    'age':{
+        'bin':[18, 25, 30, 35, 40, 45, 50, 55, 60, 65],
+        'emb_size':4
+    },
+    'fnlwgt':{
+        'bin':[6*(10**4), 10**5, 1.3*(10**5), 1.5*(10**5), 1.7*(10**5), 1.9*(10**5),
               2.1*(10**5), 2.5*(10**5), 3*(10**5)],
-    'education_num' : [7,8,10,11,13],
-    'hours_per_week':[25,35,40,45,55],
-    'capital_gain':[0,1],
-    'capital_loss':[0,1]
+        'emb_size':4
+    },
+    'education_num' : {
+        'bin':[7,8,10,11,13],
+        'emb_size':4
+    },
+    'hours_per_week':{
+        'bin':[25,35,40,45,55],
+        'emb_size':4
+    },
+    'capital_gain':{
+        'bin':[0,1],
+        'emb_size':4
+    },
+    'capital_loss':{
+        'bin':[0,1],
+        'emb_size':4
+    }
 }
 
 NORM_CONFIGS = {

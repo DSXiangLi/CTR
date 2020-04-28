@@ -1,48 +1,42 @@
 import tensorflow as tf
 from config import *
 
-def parse_example_helper_csv(expand_dimension):
-    def func(line):
-        columns = tf.io.decode_csv( line, record_defaults=CSV_RECORD_DEFAULTS )
+def parse_example_helper_csv(line):
+    columns = tf.io.decode_csv( [line], record_defaults=CSV_RECORD_DEFAULTS )
 
-        features = dict( zip( FEATURE_NAME, columns ) )
-        if expand_dimension:
-            target = tf.reshape( tf.cast( tf.equal( features.pop( TARGET ), '>50K' ), tf.float32 ), [-1, 1] )
-        else:
-            target = tf.reshape( tf.cast( tf.equal( features.pop( TARGET ), '>50K' ), tf.int32 ), [-1] )
+    features = dict( zip( FEATURE_NAME, columns ) )
 
-        return features, target
+    target = tf.reshape( tf.cast( tf.equal( features.pop( TARGET ), '>50K' ), tf.float32 ), [-1] )
 
-    return func
+    return features, target
 
-def parse_example_helper_libsvm(expand_dimension):
+
+def parse_example_helper_libsvm(line):
     # '0 1:0 2:0.053068 3:0.5 4:0.1 5:0.113437 6:0.874'
-    def func(line):
-        columns = tf.string_split([line], ' ')
-        target = tf.string_to_number(columns.values[0], out_type = tf.float32)
-        if expand_dimension:
-            target = tf.reshape(tf.cast(target, tf.float32), [-1,1])
-        else:
-            target = tf.reshape(tf.cast(target, tf.int32), [-1])
+    columns = tf.string_split([line], ' ')
 
-        splits = tf.string_split(columns.values[1:], ':')
-        id_vals = tf.reshape(splits.values, splits.dense_shape )
-        feat_ids, feat_vals = tf.split(id_vals, num_or_size_splits =2, axis=1)
-        feat_ids = tf.string_to_number(feat_ids , out_type = tf.int32)
-        feat_vals = tf.string_to_number(feat_vals, out_type = tf.float32)
-        return {'feat_ids': feat_ids, 'feat_vals': feat_vals}, target
+    target = tf.string_to_number(columns.values[0], out_type = tf.float32)
+    target = tf.reshape(tf.cast(target, tf.int32), [-1])
 
-    return func
+    splits = tf.string_split(columns.values[1:], ':')
+    id_vals = tf.reshape(splits.values, splits.dense_shape )
+
+    feat_ids, feat_vals = tf.split(id_vals, num_or_size_splits =2, axis=1)
+    feat_ids = tf.string_to_number(feat_ids , out_type = tf.int32)
+    feat_vals = tf.string_to_number(feat_vals, out_type = tf.float32)
+
+    return {'feat_ids': feat_ids, 'feat_vals': feat_vals}, target
 
 
-def input_fn(input_path, is_predict, expand_dimension, input_type):
+
+def input_fn(input_path, is_predict, input_type):
     def func():
         if input_type == 'dense':
             # currently dense default to adult training set with csv format
-            parse_example = parse_example_helper_csv( expand_dimension )
+            parse_example = parse_example_helper_csv
         elif input_type == 'sparse':
             # currently sparse default to criteo training set with libsvm format
-            parse_example = parse_example_helper_libsvm(expand_dimension)
+            parse_example = parse_example_helper_libsvm
         else:
             raise Exception('Only dense and sparse are supported now')
 
@@ -55,6 +49,9 @@ def input_fn(input_path, is_predict, expand_dimension, input_type):
             dataset = dataset \
                 .shuffle(MODEL_PARAMS['buffer_size'] ) \
                 .repeat(MODEL_PARAMS['num_epochs'] ) \
+                .batch( MODEL_PARAMS['batch_size'] )
+        else:
+            dataset = dataset \
                 .batch( MODEL_PARAMS['batch_size'] )
 
         return dataset
