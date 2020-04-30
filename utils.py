@@ -16,7 +16,7 @@ def parse_example_helper_libsvm(line):
     columns = tf.string_split([line], ' ')
 
     target = tf.string_to_number(columns.values[0], out_type = tf.float32)
-    target = tf.reshape(tf.cast(target, tf.int32), [-1])
+    target = tf.reshape(tf.cast( tf.equal( target, 1), tf.float32), [-1])
 
     splits = tf.string_split(columns.values[1:], ':')
     id_vals = tf.reshape(splits.values, splits.dense_shape )
@@ -127,5 +127,3 @@ def build_estimator_helper(model_fn, params):
 
         return estimator
     return build_estimator
-
-

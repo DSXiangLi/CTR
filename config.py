@@ -2,7 +2,7 @@ import tensorflow as tf
 
 def data_dir(name, input_type):
     DATA_CSV_DIR = './data/adult/{}.csv'
-    DATA_LIBSVM_DIR = './data/criteo/{}.libsvm'
+    DATA_LIBSVM_DIR = './data/frappe/frappe.{}.libfm'
     if input_type == 'dense':
         return DATA_CSV_DIR.format( name )
     elif input_type == 'sparse':
@@ -10,8 +10,16 @@ def data_dir(name, input_type):
     else:
         raise Exception( 'Currenlty only dense or sparse is supported' )
 
-MODEL_DIR = './test_checkpoint/{}'
+MODEL_DIR = './checkpoint/{}'
 
+## Feature Parameter for frappe feature sample
+FRAPPE_PARAMS = {
+    'field_size': 10,
+    'feature_size': 5382,
+    'embedding_size': 32
+}
+
+## Feature Parameter for adult feature sample
 FEATURE_NAME =[
     'age', 'workclass', 'fnlwgt', 'education', 'education_num',
     'marital_status', 'occupation', 'relationship', 'race', 'gender',
@@ -32,9 +40,9 @@ for i ,j in enumerate(CSV_RECORD_DEFAULTS):
 
 
 MODEL_PARAMS = {
-    'batch_size':512,
-    'num_epochs':5000,
-    'buffer_size':512
+    'batch_size': 512,
+    'num_epochs': 5000,
+    'buffer_size': 512
 }
 
 EMB_CONFIGS = {
