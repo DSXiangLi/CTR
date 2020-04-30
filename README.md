@@ -6,9 +6,11 @@
 - FFM 
 - Embedding+MLP
 - wide & Deep
-- DeepFM
+- DeepFM [sparse & dense]
 - PNN 
 - FNN 
+- AFM
+- NFM
 
 2. 参考论文列表
 - [GBDT+LR] Practical Lessons from Predicting Clicks on Ads at Facebook
