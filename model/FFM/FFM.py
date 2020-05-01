@@ -49,9 +49,13 @@ def model_fn(features, labels, mode, params):
     return y
 
 build_estimator = build_estimator_helper(
-    {'dense':model_fn},
-     params = {
+    model_fn = {
+        'dense':model_fn
+    },
+    params = {
+         'dense':{
             'learning_rate' :0.01,
             'factor_dim': 3
-            }
+         }
+    }
 )

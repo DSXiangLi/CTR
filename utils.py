@@ -121,7 +121,7 @@ def build_estimator_helper(model_fn, params):
         estimator = tf.estimator.Estimator(
             model_fn = model_fn[input_type],
             config = run_config,
-            params = params,
+            params = params[input_type],
             model_dir= model_dir
         )
 

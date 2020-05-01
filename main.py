@@ -59,8 +59,8 @@ if __name__ =='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument( '--model', type = str, help = 'which model to use[FM|FFM]', required=True )
     parser.add_argument( '--step', type = str, help = 'Train or Predict', required=False, default='train' )
-    parser.add_argument( '--clear_model', type=int, help='Whether to clear existing model', required=False, default=1)
-    parser.add_argument( '--input_type', type=str, help='Use dense input[adult data in csv] or sparse input[crito data in libsvm]',
+    parser.add_argument( '--clear_model', type=int, help= 'Whether to clear existing model', required=False, default=1)
+    parser.add_argument( '--input_type', type=str, help= 'Use dense input[adult data in csv] or sparse input[frappe data in libfm]',
                          required=False, default='dense')
     args = parser.parse_args()
 

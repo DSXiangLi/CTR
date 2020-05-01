@@ -46,12 +46,16 @@ def model_fn(features, labels, mode, params):
     return y
 
 build_estimator = build_estimator_helper(
-    {'dense':model_fn},
-     params = {
+    mdoel_fn = {
+        'dense':model_fn
+    },
+    params = {
+        'dense': {
             'dropout_rate':0.2,
-            'learning_rate' :0.002,
+            'learning_rate': 0.002,
             'hidden_units':[24,12,1]
-            }
+        }
+    }
 )
 
 

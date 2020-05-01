@@ -51,13 +51,17 @@ def model_fn(features, labels, mode, params):
 
 
 build_estimator = build_estimator_helper(
-    {'dense':model_fn},
+     model_fn = {
+         'dense':model_fn
+     },
      params = {
-            'learning_rate' :0.002,
+         'dense':
+             {'learning_rate' :0.002,
             'numeric_handle':'dense', # dense or bucketize are supported
             'hidden_units': [20,10],
             'embedding_dim': 4,
             'dropout_rate': 0.1
-        }
+            }
+     }
 )
 

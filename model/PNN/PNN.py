@@ -63,11 +63,15 @@ def model_fn(features, labels, mode, params):
 
 
 build_estimator = build_estimator_helper(
-    {'dense':model_fn},
-     params = {
-            'model_type': 'IPNN', # support IPNN/OPNN/PNN
+    model_fn = {
+        'dense':model_fn
+    },
+    params = {
+        'dense': {
+            'model_type':'IPNN',  # support IPNN/OPNN/PNN
             'dropout_rate':0.2,
-            'learning_rate' :0.002,
+            'learning_rate': 0.002,
             'hidden_units':[24,12,1]
-            }
+        }
+    }
 )
