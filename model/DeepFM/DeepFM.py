@@ -61,14 +61,14 @@ def model_fn_sparse(features, labels, mode, params):
     feat_vals = tf.reshape(features['feat_vals'], shape = [-1, field_size]) # batch * field_size
 
     with tf.variable_scope('FM_component'):
-        bias = tf.get_variable(shape =[1], name = 'linear_bias')
-        weight = tf.get_variable(shape = [feature_size], name = 'linear_weight')
-        v = tf.get_variable(shape = [feature_size, embedding_size], name = 'embedding_weight')
+        bias = tf.get_variable(shape =[1], name = 'linear_bias', initializer = tf.glorot_uniform_initializer())
+        weight = tf.get_variable(shape = [feature_size], name = 'linear_weight', initializer = tf.truncated_normal_initializer())
+        v = tf.get_variable(shape = [feature_size, embedding_size], name = 'embedding_weight', initializer = tf.truncated_normal_initializer())
 
         with tf.variable_scope( 'Linear' ):
             # batch_size * feature_size -> batch_size * field_size  -> batch_size * 1
             linear_output = tf.reduce_sum(tf.multiply(tf.nn.embedding_lookup(weight, feat_ids), feat_vals) , axis=1, keepdims=True)
-            linear_output = tf.add(linear_output,bias)
+            linear_output = tf.add(linear_output,bias) # batch * 1
             add_layer_summary( 'linear_output', linear_output )
 
         with tf.variable_scope( 'second_order' ):
@@ -79,7 +79,7 @@ def model_fn_sparse(features, labels, mode, params):
             sum_square = tf.pow( tf.reduce_sum( embedding_matrix, axis=1 ), 2 )
             square_sum = tf.reduce_sum( tf.pow(embedding_matrix,2), axis=1 )
 
-            fm_output = tf.reduce_sum(tf.subtract( sum_square, square_sum) * 0.5, axis=1, keepdims=True)
+            fm_output = tf.reduce_sum(tf.subtract( sum_square, square_sum) * 0.5, axis=1, keepdims=True) # batch * 1
             add_layer_summary('fm_output', fm_output)
 
     with tf.variable_scope('Deep_component'):
@@ -92,19 +92,28 @@ def model_fn_sparse(features, labels, mode, params):
             add_layer_summary( dense.name, dense )
 
     with tf.variable_scope( 'output' ):
-        y = dense + fm_output+ linear_output
+        y = dense + fm_output+ linear_output # batch * 1
         add_layer_summary( 'output', y )
 
     return y
 
 build_estimator = build_estimator_helper(
-    {'dense' : model_fn_dense,
-     'sparse': model_fn_sparse
-     },
-     params = {
+    model_fn = {
+        'dense' : model_fn_dense,
+        'sparse': model_fn_sparse
+    },
+    params = {
+         'dense': {
             'dropout_rate': 0.2,
             'learning_rate' :0.001,
             'hidden_units':[20,10,1]
+            },
+        'sparse': {
+            'dropout_rate':0.2,
+            'learning_rate':0.002,
+            'hidden_units':[128,64,1]
+
         }
+    }
 )
 
