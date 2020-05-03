@@ -32,3 +32,4 @@
 - CTR学习笔记&代码实现1-深度学习的前奏LR->FFM https://www.cnblogs.com/gogoSandy/p/12501846.html
 - CTR学习笔记&代码实现2-深度ctr模型 MLP->Wide&Deep https://www.cnblogs.com/gogoSandy/p/12658051.html
 - CTR学习笔记&代码实现3-深度ctr模型 FNN->PNN->DeepFM https://www.cnblogs.com/gogoSandy/p/12742417.html
+- CTR学习笔记&代码实现4-深度ctr模型 NFM/AFM https://www.cnblogs.com/gogoSandy/p/12814804.html
