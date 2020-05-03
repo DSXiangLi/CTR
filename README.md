@@ -1,5 +1,4 @@
 # CTR学习笔记
-run demo
 python main.py --model DeepFM --step train --input_type sparse --clear_model 1
 
 1. 已完成模型列表
