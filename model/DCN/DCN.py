@@ -14,11 +14,13 @@ from utils import tf_estimator_model, add_layer_summary, build_estimator_helper
 from layers import stack_dense_layer, sparse_embedding
 
 def cross_op_raw(xl, x0, weight, feature_size):
-    # original multiply order: x0 * xl * w
+    # original multiply order: (x0 * xl) * w
+    # (batch,feature_size) - > (batch, feature_size * feature_size)
     outer_product = tf.matmul(tf.reshape(x0, [-1, feature_size,1]),
                               tf.reshape(xl, [-1, 1, feature_size])
-                              )  # batch * feature_size * feature_size
-    interaction = tf.tensordot(outer_product, weight, axes=1) # batch * feature_size
+                              )
+    # (batch,feature_size*feature_size) ->(batch, feature_size)
+    interaction = tf.tensordot(outer_product, weight, axes=1)
     return interaction
 
 def cross_op_better(xl, x0, weight, feature_size):
@@ -47,7 +49,7 @@ def cross_layer(x0, cross_layers, cross_op = 'better'):
 
             interaction = cross_func(xl, x0, weight, feature_size)
 
-            xl = interaction + bias + x0  # add back original input -> (batch, feature_size)
+            xl = interaction + bias + xl  # add back previous layer  -> (batch, feature_size)
             add_layer_summary( 'cross_{}'.format( i ), xl )
     return xl
 
