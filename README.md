@@ -39,7 +39,8 @@ python main.py --model DeepFM --step train --input_type sparse --clear_model 1
 - [xDeepFM] xDeepFM- Combining Explicit and Implicit Feature Interactions for Recommender Systems
 
 4. 总结博客
-- CTR学习笔记&代码实现1-深度学习的前奏LR->FFM https://www.cnblogs.com/gogoSandy/p/12501846.html
+- CTR学习笔记&代码实现1-深度学习的前奏 LR->FFM https://www.cnblogs.com/gogoSandy/p/12501846.html
 - CTR学习笔记&代码实现2-深度ctr模型 MLP->Wide&Deep https://www.cnblogs.com/gogoSandy/p/12658051.html
 - CTR学习笔记&代码实现3-深度ctr模型 FNN->PNN->DeepFM https://www.cnblogs.com/gogoSandy/p/12742417.html
 - CTR学习笔记&代码实现4-深度ctr模型 NFM/AFM https://www.cnblogs.com/gogoSandy/p/12814804.html
+- CTR学习笔记&代码实现5-深度ctr模型 DeepCrossing -> DCN https://www.cnblogs.com/gogoSandy/p/12892973.html
