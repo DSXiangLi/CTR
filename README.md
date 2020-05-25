@@ -3,16 +3,16 @@ python main.py --model DeepFM --step train --input_type sparse --clear_model 1
 
 1. 已完成模型列表
 
-- FM 
-- FFM 
-- Embedding+MLP
-- wide & Deep
+- FM [dense]
+- FFM [dense]
+- Embedding+MLP [dense]
+- wide & Deep [dense]
+- FNN [dense]
+- PNN [dense]
 - DeepFM [sparse & dense]
-- PNN 
-- FNN 
 - AFM [sparse & dense]
 - NFM [sparse & dense]
-- Deep Crossing 
+- Deep Crossing [dense]
 - Deep & Cross [sparse & dense]
 
 2. 数据集
@@ -34,9 +34,11 @@ python main.py --model DeepFM --step train --input_type sparse --clear_model 1
 - [NFM] Neural Factorization Machines for Sparse Predictive Analytics
 - [DCN] Deep & Cross Network for Ad Click Predictions
 - [Deep Crossing] Deep Crossing - Web-Scale Modeling without Manually Crafted Combinatorial Features
+- [xDeepFM] xDeepFM- Combining Explicit and Implicit Feature Interactions for Recommender Systems
+- [FiBiNET]- Combining Feature Importance and Bilinear feature Interaction for Click-Through Rate Prediction
+- [AutoInt]- Automatic Feature Interaction Learning via Self-Attentive Neural Networks
 - [DIN] Deep Interest Network for Click-Through Rate Prediction.
 - [DIEN] Deep Interest Evolution Network for Click-Through Rate Prediction
-- [xDeepFM] xDeepFM- Combining Explicit and Implicit Feature Interactions for Recommender Systems
 
 4. 总结博客
 - CTR学习笔记&代码实现1-深度学习的前奏 LR->FFM https://www.cnblogs.com/gogoSandy/p/12501846.html
