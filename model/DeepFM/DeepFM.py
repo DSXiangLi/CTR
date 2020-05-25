@@ -25,7 +25,7 @@ def model_fn_dense(features, labels, mode, params):
 
         with tf.variable_scope('second_order'):
             # reshape (batch_size, n_feature * emb_size) -> (batch_size, n_feature, emb_size)
-            emb_size = dense_feature[0].variable_shape.as_list()[0] # all feature has same emb dimension
+            emb_size = dense_feature[0].variable_shape.as_list()[-1]# all feature has same emb dimension
             embedding_matrix = tf.reshape(dense, (-1, len(dense_feature), emb_size))
             add_layer_summary( 'embedding_matrix', embedding_matrix )
             # Compared to FM embedding here is flatten(x * v) not v
