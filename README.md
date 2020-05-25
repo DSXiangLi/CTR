@@ -14,6 +14,7 @@ python main.py --model DeepFM --step train --input_type sparse --clear_model 1
 - NFM [sparse & dense]
 - Deep Crossing [dense]
 - Deep & Cross [sparse & dense]
+- xDeepFM [sparse & denes]
 
 2. 数据集
 所有模型都支持dense输入的model_fn，部分模型支持sparse输入的model_fn。考虑到只有两份数据集，input_type直接和data_dir，training_parameter绑定了，丑是丑了点以后要是加别的数据集再改吧。。。
