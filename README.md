@@ -48,3 +48,4 @@ python main.py --model DeepFM --step train --input_type sparse --clear_model 1
 - CTR学习笔记&代码实现3-深度ctr模型 FNN->PNN->DeepFM https://www.cnblogs.com/gogoSandy/p/12742417.html
 - CTR学习笔记&代码实现4-深度ctr模型 NFM/AFM https://www.cnblogs.com/gogoSandy/p/12814804.html
 - CTR学习笔记&代码实现5-深度ctr模型 DeepCrossing -> DCN https://www.cnblogs.com/gogoSandy/p/12892973.html
+- CTR学习笔记&代码实现6-深度ctr模型 后浪 xDeepFM/FiBiNET https://www.cnblogs.com/gogoSandy/p/13023265.html
