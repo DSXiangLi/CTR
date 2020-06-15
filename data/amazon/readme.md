@@ -65,10 +65,15 @@ where
 
 ## data process 
 数据处理代码来自 https://github.com/zhougr1993/DeepInterestNetwork
+进行了部分调整
+- 转换成tfrecord方便和estimator进行对接
+- 直接读/写不定长数组，不在原始数据做padding降低内存占用
+- 训练集/测试集在tfrecord进行区分
 
 ```
 bash 0_download_raw.sh
 python 1_convert_pd.py
 python 2_remap_id.py
 python 3_build_dataset.py
+python 4_dump_tfrecord.py
 ```

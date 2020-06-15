@@ -1,5 +1,12 @@
 .DS_Store
 .idea/
-checkpoint/*
 .gitignore.swp
 __pycache__/
+data/amazon/*.gz
+data/criteo/*.libsvm
+data/ali_ccp/*.csv
+*.tfrecords
+*.json
+*.pkl
+census_checkpoint/*
+frappe_checkpoint/*
