@@ -1,26 +1,24 @@
 # CTR学习笔记
-python main.py --model DeepFM --step train --input_type sparse --clear_model 1
+python main.py --model DeepFM --step train --dataset census --clear_model 1
 
-1. 已完成模型列表
+1. 已完成模型列表[支持数据集]
 
-- FM [dense]
-- FFM [dense]
-- Embedding+MLP [dense]
-- wide & Deep [dense]
-- FNN [dense]
-- PNN [dense]
-- DeepFM [sparse & dense]
-- AFM [sparse & dense]
-- NFM [sparse & dense]
-- Deep Crossing [dense]
-- Deep & Cross [sparse & dense]
-- xDeepFM [sparse & denes]
-- FiBiNET [sparse & dense]
+- FM [census]
+- FFM [census]
+- Embedding+MLP [census]
+- wide & Deep [census]
+- FNN [census]
+- PNN [census]
+- DeepFM [census & frappe]
+- AFM [census & frappe]
+- NFM [census & frappe]
+- Deep Crossing [census]
+- Deep & Cross [census & frappe]
+- xDeepFM [census & frappe]
+- FiBiNET [census & frappe]
 
 2. 数据集
-所有模型都支持dense输入的model_fn，部分模型支持sparse输入的model_fn。考虑到只有两份数据集，input_type直接和data_dir，training_parameter绑定了，丑是丑了点以后要是加别的数据集再改吧。。。
-- dense：https://archive.ics.uci.edu/ml/machine-learning-databases/adult
-- sparse：http://baltrunas.info/research-menu/frappe
+当前支持census, frappe数据集，详情见data目录，training parameter和preprocess与数据集绑定
 
 3. 参考论文列表
 - [GBDT+LR] Practical Lessons from Predicting Clicks on Ads at Facebook
