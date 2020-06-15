@@ -7,7 +7,7 @@ Tongwen Huang, 2019, FiBiNET: Combining Feature Importance and Bilinear feature 
 
 import tensorflow as tf
 import numpy as np
-from config import *
+from const import *
 from model.DeepFM.preprocess import build_features
 from utils import tf_estimator_model, add_layer_summary, build_estimator_helper
 from layers import stack_dense_layer, sparse_embedding, sparse_linear
@@ -83,8 +83,8 @@ def model_fn_dense(features, labels, mode, params):
                                          pool_op = params['pool_op'], ratio= params['senet_ratio'])
 
     # combination layer & BI_interaction
-    BI_org = Bilinear_layer(embedding_matrix, field_size, emb_size, type = params['bilinear_type'], name = 'org')
-    BI_senet = Bilinear_layer(senet_embedding_matrix, field_size, emb_size, type = params['bilinear_type'], name = 'senet')
+    BI_org = Bilinear_layer(embedding_matrix, field_size, emb_size, type = params['model_type'], name = 'org')
+    BI_senet = Bilinear_layer(senet_embedding_matrix, field_size, emb_size, type = params['model_type'], name = 'senet')
 
     combination_layer = tf.concat([BI_org, BI_senet] , axis =1)
 
@@ -103,9 +103,10 @@ def model_fn_dense(features, labels, mode, params):
 @tf_estimator_model
 def model_fn_sparse(features, labels, mode, params):
     # hyper parameter
-    field_size = FRAPPE_PARAMS['field_size']
-    feature_size = FRAPPE_PARAMS['feature_size']
-    embedding_size = FRAPPE_PARAMS['embedding_size']
+    data_params = params['data_params']
+    field_size = data_params['field_size']
+    feature_size = data_params['feature_size']
+    embedding_size = data_params['embedding_size']
 
     # extract feature
     feat_ids = tf.reshape(features['feat_ids'], shape = [-1, field_size]) # batch * field_size
@@ -124,8 +125,8 @@ def model_fn_sparse(features, labels, mode, params):
                                          pool_op = params['pool_op'], ratio= params['senet_ratio'])
 
     # combination layer & BI_interaction
-    BI_org = Bilinear_layer(embedding_matrix, field_size, embedding_size, type = params['bilinear_type'], name = 'org')
-    BI_senet = Bilinear_layer(senet_embedding_matrix, field_size, embedding_size, type = params['bilinear_type'], name = 'senet')
+    BI_org = Bilinear_layer(embedding_matrix, field_size, embedding_size, type = params['model_type'], name = 'org')
+    BI_senet = Bilinear_layer(senet_embedding_matrix, field_size, embedding_size, type = params['model_type'], name = 'senet')
 
     combination_layer = tf.concat([BI_org, BI_senet] , axis =1)
 
@@ -143,29 +144,30 @@ def model_fn_sparse(features, labels, mode, params):
 
 build_estimator = build_estimator_helper(
     model_fn = {
-        'dense' : model_fn_dense,
-        'sparse': model_fn_sparse
+        'census' : model_fn_dense,
+        'frappe': model_fn_sparse
     },
     params = {
-         'dense': {
+         'census': {
             'dropout_rate': 0.2,
-            'learning_rate' : 0.001,
+            'learning_rate' : 0.01,
             'hidden_units': [20,10,1],
             'batch_norm': True,
             'cin_layer_size': [8,4,4],
              'pool_op': 'avg',
              'senet_ratio': 2,
-             'bilinear_type': 'field_all' # support field_all / field_each / field_interaction
+             'model_type': 'field_all' # support field_all / field_each / field_interaction
             },
-        'sparse': {
+        'frappe': {
             'dropout_rate': 0.2,
-            'learning_rate': 0.002,
+            'learning_rate': 0.01,
             'hidden_units': [128, 64, 32, 1],
             'batch_norm': True,
             'cin_layer_size': [32,16,8],
             'pool_op': 'avg',
             'senet_ratio': 2,
-            'bilinear_type': 'field_all'  # support field_all / field_each / field_interaction
+            'model_type': 'field_all' , # support field_all / field_each / field_interaction
+            'data_params': FRAPPE_PARAMS
 
         }
     }

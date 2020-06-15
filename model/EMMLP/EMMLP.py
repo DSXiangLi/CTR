@@ -1,13 +1,13 @@
 import tensorflow as tf
 import numpy as np
-from config import *
+from const import *
 from model.EMMLP.preprocess import build_features
 from utils import tf_estimator_model, add_layer_summary, build_estimator_helper
 
 
 @tf_estimator_model
 def model_fn(features, labels, mode, params):
-    sparse_columns, dense_columns = build_features(params['numeric_handle'])
+    sparse_columns, dense_columns = build_features(params['model_type'])
 
     with tf.variable_scope('EmbeddingInput'):
         embedding_input = []
@@ -28,7 +28,7 @@ def model_fn(features, labels, mode, params):
         add_layer_summary( dense.name, dense )
 
         # if treat numeric feature as dense feature, then concatenate with embedding. else concatenate wtih sparse input
-        if params['numeric_handle'] == 'dense':
+        if params['model_type'] == 'dense':
             numeric_input = tf.feature_column.input_layer(features, dense_columns)
 
             numeric_input = tf.layers.batch_normalization(numeric_input, center = True, scale = True, trainable =True,
@@ -52,12 +52,12 @@ def model_fn(features, labels, mode, params):
 
 build_estimator = build_estimator_helper(
      model_fn = {
-         'dense':model_fn
+         'census':model_fn
      },
      params = {
-         'dense':
-             {'learning_rate' :0.002,
-            'numeric_handle':'dense', # dense or bucketize are supported
+         'census':
+             {'learning_rate' :0.01,
+            'model_type':'dense', # dense or bucketize are supported
             'hidden_units': [20,10],
             'embedding_dim': 4,
             'dropout_rate': 0.1

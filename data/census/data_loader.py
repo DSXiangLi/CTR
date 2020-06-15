@@ -3,10 +3,10 @@ import re
 
 def data_loader():
 
-    DATA_URL = 'https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.{}'
-    DATA_DIR = './data/adult/{}.csv'
+    DATA_URL = 'https://archive.ics.uci.edu/ml/machine-learning-databases/census/census.{}'
+    DATA_DIR = './data/census/{}.csv'
     files = {'data':'train',
-            'test':'valid'}
+             'test':'valid'}
 
     for ifile in files.keys():
         url = DATA_URL.format(ifile)
@@ -32,7 +32,3 @@ def data_loader():
 
 if __name__ == '__main__' :
     data_loader()
-
-
-
-df = pd.readc

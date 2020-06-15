@@ -1,15 +1,15 @@
 import tensorflow as tf
+from const import *
 from config import *
 
-def parse_example_helper_csv(line):
-    columns = tf.io.decode_csv( [line], record_defaults=CSV_RECORD_DEFAULTS )
+def parse_example_helper_csv(line ):
+    columns = tf.io.decode_csv( [line], record_defaults = CSV_RECORD_DEFAULTS )
 
     features = dict( zip( FEATURE_NAME, columns ) )
 
-    target = tf.reshape( tf.cast( tf.equal( features.pop( TARGET ), '>50K' ), tf.float32 ), [-1] )
+    target = tf.reshape( tf.cast( tf.equal( features.pop( TARGET  ), TARGET_VAL ), tf.float32 ), [-1] )
 
     return features, target
-
 
 def parse_example_helper_libsvm(line):
     # '0 1:0 2:0.053068 3:0.5 4:0.1 5:0.113437 6:0.874'
@@ -28,31 +28,46 @@ def parse_example_helper_libsvm(line):
     return {'feat_ids': feat_ids, 'feat_vals': feat_vals}, target
 
 
+def parse_example_helper_tfreocrd(line):
+    features = tf.parse_single_example(line, features = AMAZON_PROTO)
 
-def input_fn(input_path, is_predict, input_type):
+    for i in AMAZON_VARLEN:
+        features[i] = tf.sparse_tensor_to_dense(features[i])
+
+    return features
+
+
+def input_fn(step, is_predict, config):
     def func():
-        if input_type == 'dense':
-            # currently dense default to adult training set with csv format
-            parse_example = parse_example_helper_csv
-        elif input_type == 'sparse':
-            # currently sparse default to criteo training set with libsvm format
-            parse_example = parse_example_helper_libsvm
-        else:
-            raise Exception('Only dense and sparse are supported now')
-
-        dataset = tf.data.TextLineDataset( input_path ) \
+        if config.input_parser == 'csv':
+            dataset = tf.data.TextLineDataset(config.data_dir.format(step)) \
             .skip( 1 ) \
-            .map( parse_example, num_parallel_calls=8 )
+            .map( parse_example_helper_csv, num_parallel_calls=8 )
+
+        elif config.input_parser == 'libsvm':
+            dataset = tf.data.TextLineDataset( config.data_dir.format(step) ) \
+                .skip( 1 ) \
+                .map( parse_example_helper_libsvm, num_parallel_calls=8 )
+
+        elif config.input_parser == 'tfrecord':
+            dataset = tf.data.TFRecordDataset( config.data_dir.format(step)) \
+                .map( parse_example_helper_tfreocrd, num_parallel_calls=8 )
+
+        else:
+            raise Exception('Only [csv|libsvm|tfrecord] are supported now')
 
         if not is_predict:
             # shuffle before repeat and batch last
             dataset = dataset \
                 .shuffle(MODEL_PARAMS['buffer_size'] ) \
                 .repeat(MODEL_PARAMS['num_epochs'] ) \
-                .batch( MODEL_PARAMS['batch_size'] )
+
+        if 'varlen' in config.input_type:
+            dataset = dataset\
+                .padded_batch(config.pad_shape)
         else:
             dataset = dataset \
-                .batch( MODEL_PARAMS['batch_size'] )
+                .batch(MODEL_PARAMS['batch_size'] )
 
         return dataset
     return func
@@ -102,7 +117,10 @@ def tf_estimator_model(model_fn):
 
 
 def build_estimator_helper(model_fn, params):
-    def build_estimator(model_dir, input_type):
+    def build_estimator(config):
+
+        if config.data_name not in model_fn:
+            raise Exception('Only [{}] are supported'.format(','.join(model_fn.keys()) ))
 
         run_config = tf.estimator.RunConfig(
             save_summary_steps=50,
@@ -113,16 +131,17 @@ def build_estimator_helper(model_fn, params):
 
         if 'model_type' in params:
             # PNN -> PNN/IPNN
-            model_dir = model_dir + '/' + params['model_type']
-
-        if input_type not in model_fn:
-            raise Exception('Only [{}] input_type are supported'.format(','.join(model_fn.keys()) ))
+            # FiBiNET -> field_all/field_each/field_interaction
+            # EMMLP -> dense/bucketize
+            model_dir = config.checkpoint_dir + '/' + params['model_type']
+        else:
+            model_dir = config.checkpoint_dir
 
         estimator = tf.estimator.Estimator(
-            model_fn = model_fn[input_type],
+            model_fn = model_fn[config.data_name],
             config = run_config,
-            params = params[input_type],
-            model_dir= model_dir
+            params = params[config.data_name],
+            model_dir = model_dir
         )
 
         return estimator

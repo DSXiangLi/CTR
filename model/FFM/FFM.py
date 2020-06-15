@@ -50,10 +50,10 @@ def model_fn(features, labels, mode, params):
 
 build_estimator = build_estimator_helper(
     model_fn = {
-        'dense':model_fn
+        'census':model_fn
     },
     params = {
-         'dense':{
+         'census':{
             'learning_rate' :0.01,
             'factor_dim': 3
          }

@@ -7,9 +7,9 @@ S. Rendle, “Factorization machines,” in Proceedings of IEEE International Co
 
 from tensorflow.keras.layers import Layer, InputSpec, Input, Dense
 from tensorflow.keras import activations, Model
-
+import tensorflow as tf
 import tensorflow.keras.backend as K
-from config import *
+from const import *
 from model.FM.preprocess import build_features
 
 class FM_Layer( Layer ):
@@ -118,7 +118,7 @@ def model_fn():
 
     return model
 
-def build_estimator(model_dir, **kwargs):
+def build_estimator(config):
     # keras model -> tf.estimator
 
     model = model_fn()
@@ -129,8 +129,8 @@ def build_estimator(model_dir, **kwargs):
         keep_checkpoint_max = 3,
         save_checkpoints_steps = 10
     )
-    # Avoid checkpoint
+    # Avoid census_checkpoint
     estimator = tf.keras.estimator.model_to_estimator(
-        keras_model=model, model_dir= model_dir, config = run_config )
+        keras_model=model, model_dir= config.checkpoint_dir, config = run_config )
 
     return estimator

@@ -1,4 +1,4 @@
-from config import *
+from const import *
 import tensorflow as tf
 from itertools import combinations
 

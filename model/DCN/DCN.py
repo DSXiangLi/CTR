@@ -8,7 +8,7 @@ Gang Fu,Mingliang Wang, 2017, Deep & Cross Network for Ad Click Predictions
 
 import tensorflow as tf
 import numpy as np
-from config import *
+from const import *
 from model.DCN.preprocess import build_features
 from utils import tf_estimator_model, add_layer_summary, build_estimator_helper
 from layers import stack_dense_layer, sparse_embedding
@@ -79,9 +79,10 @@ def model_fn_dense(features, labels, mode, params):
 @tf_estimator_model
 def model_fn_sparse(features, labels, mode, params):
     # hyper parameter
-    field_size = FRAPPE_PARAMS['field_size']
-    feature_size = FRAPPE_PARAMS['feature_size']
-    embedding_size = FRAPPE_PARAMS['embedding_size']
+    data_params = params['data_params']
+    field_size = data_params['field_size']
+    feature_size = data_params['feature_size']
+    embedding_size = data_params['embedding_size']
 
     # extract feature
     feat_ids = tf.reshape(features['feat_ids'], shape = [-1, field_size]) # (batch, field_size)
@@ -112,25 +113,26 @@ def model_fn_sparse(features, labels, mode, params):
 
 build_estimator = build_estimator_helper(
     model_fn = {
-        'dense':model_fn_dense,
-        'sparse':model_fn_sparse
+        'census': model_fn_dense,
+        'frappe': model_fn_sparse
     },
      params = {
-         'dense':{
+         'census':{
                'dropout_rate' : 0.2,
                'batch_norm' : True,
-               'learning_rate' : 0.002,
+               'learning_rate' : 0.01,
                'hidden_units' : [10,5],
                'cross_layers' : 3,
-              'cross_op':'raw'
+               'cross_op':'raw'
          },
-         'sparse':{
+         'frappe':{
                'dropout_rate' : 0.2,
                'batch_norm' : True,
                'learning_rate' : 0.01,
                'hidden_units' : [128, 64],
                'cross_layers' : 3,
-               'cross_op':'better'
+               'cross_op':'better',
+               'data_params': FRAPPE_PARAMS
          }
    }
 )

@@ -6,7 +6,7 @@ Qu Y, Cai H, Ren K, et al. Product-based neural networks for user response predi
 """
 import tensorflow as tf
 import numpy as np
-from config import *
+from const import *
 from model.PNN.preprocess import build_features
 from utils import tf_estimator_model, add_layer_summary, build_estimator_helper
 
@@ -64,13 +64,13 @@ def model_fn(features, labels, mode, params):
 
 build_estimator = build_estimator_helper(
     model_fn = {
-        'dense':model_fn
+        'census':model_fn
     },
     params = {
-        'dense': {
+        'census': {
             'model_type':'IPNN',  # support IPNN/OPNN/PNN
             'dropout_rate':0.2,
-            'learning_rate': 0.002,
+            'learning_rate': 0.01,
             'hidden_units':[24,12,1]
         }
     }

@@ -8,7 +8,7 @@ Ying Shan, T. Ryan Hoens, 2016, Deep Crossing: Web-Scale Modeling without Manual
 
 import tensorflow as tf
 import numpy as np
-from config import *
+from const import *
 from model.DeepCrossing.preprocess import build_features
 from utils import tf_estimator_model, add_layer_summary, build_estimator_helper
 
@@ -56,12 +56,12 @@ def model_fn(features, labels, mode, params):
 
 build_estimator = build_estimator_helper(
     model_fn = {
-        'dense':model_fn
+        'census':model_fn
     },
     params = {
-        'dense':{'dropout_rate' : 0.2,
+        'census':{'dropout_rate' : 0.2,
                'batch_norm' : True,
-               'learning_rate' : 0.002,
+               'learning_rate' : 0.01,
                'hidden_units' : [10,5]
             }
     }
