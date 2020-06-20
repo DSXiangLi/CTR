@@ -1,5 +1,7 @@
 # CTR学习笔记
-python main.py --model DeepFM --step train --dataset census --clear_model 1
+
+- Run: python main.py --model DeepFM --step train --dataset census --clear_model 1
+- Requirement: tensorflow 1.15
 
 1. 已完成模型列表[支持数据集]
 
