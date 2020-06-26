@@ -18,6 +18,7 @@
 - Deep & Cross [census & frappe]
 - xDeepFM [census & frappe]
 - FiBiNET [census & frappe]
+- DIN [amazon]
 
 2. 数据集
 当前支持census, frappe数据集，详情见data目录，training parameter和preprocess与数据集绑定
