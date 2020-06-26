@@ -34,8 +34,9 @@ def parse_example_helper_tfreocrd(line):
     for i in AMAZON_VARLEN:
         features[i] = tf.sparse_tensor_to_dense(features[i])
 
-    return features
+    target = tf.reshape(tf.cast( features.pop( AMAZON_TARGET ), tf.float32),[-1])
 
+    return features, target
 
 def input_fn(step, is_predict, config):
     def func():
@@ -64,7 +65,8 @@ def input_fn(step, is_predict, config):
 
         if 'varlen' in config.input_type:
             dataset = dataset\
-                .padded_batch(config.pad_shape)
+                .padded_batch(batch_size = MODEL_PARAMS['batch_size'] ,
+                              padded_shapes = config.pad_shape)
         else:
             dataset = dataset \
                 .batch(MODEL_PARAMS['batch_size'] )

@@ -36,13 +36,14 @@ class CONFIG:
     PADDED_SHAPE = {
         'census': None,
         'frappe': None,
-        'amazon': {
+        'amazon': ({
                 'reviewer_id': [],
-                'hist_list': [None],
+                'hist_item_list': [None],
+                'hist_category_list':[None],
                 'hist_length': [],
                 'item': [],
-                'target': []
-        }
+                'item_category':[],
+        },[1])
     }
 
     def __init__(self, model_name, data_name):

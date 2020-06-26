@@ -10,3 +10,4 @@ data/ali_ccp/*.csv
 *.pkl
 census_checkpoint/*
 frappe_checkpoint/*
+!*/*/graph.pbtxt
