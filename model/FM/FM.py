@@ -36,7 +36,7 @@ def model_fn(features, labels, mode, params):
         sum_square = tf.pow(tf.matmul(input, v),2)
         square_sum = tf.matmul(tf.pow(input,2), tf.pow(v,2))
 
-        interaction_term = 0.5 * tf.reduce_mean(sum_square - square_sum, axis=1, keep_dims= True)
+        interaction_term = 0.5 * tf.reduce_sum(sum_square - square_sum, axis=1, keep_dims= True)
 
         add_layer_summary(interaction_term.name, interaction_term)
 
