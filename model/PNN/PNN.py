@@ -33,7 +33,7 @@ def model_fn(features, labels, mode, params):
                 vj = tf.gather(embedding_matrix, indices = j, axis=1, batch_dims= 0, name='vj') # batch * embedding_size
                 outer_collection.append(tf.reshape(tf.einsum('ai,aj->aij',vi,vj), [-1, embedding_size * embedding_size])) # batch * (emb * emb)
 
-            outer_product = tf.concat(outer_collection, axis=1)
+        outer_product = tf.concat(outer_collection, axis=1)
         add_layer_summary( outer_product.name, outer_product )
 
     with tf.variable_scope('fc1'):
